@@ -359,10 +359,10 @@ export default function App() {
 
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 2 }}
-            className="mt-32 flex flex-col items-center gap-6 relative z-50 bg-art-back/90 backdrop-blur-md p-6 rounded-2xl shadow-2xl border border-art-paper/10"
+            className="fixed bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 z-50 bg-art-back/90 backdrop-blur-md p-4 rounded-2xl shadow-2xl border border-art-paper/10 w-auto min-w-[300px]"
           >
              {ytId && (
                <div className="flex flex-col items-center gap-4">
