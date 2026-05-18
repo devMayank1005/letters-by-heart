@@ -331,112 +331,115 @@ export default function App() {
               content={content}
               images={images}
             />
+            {isOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 2.5 }}
+                className="mt-16 mb-8 flex flex-col items-center gap-4 z-50 bg-art-back text-art-paper p-6 rounded-2xl shadow-xl mx-auto w-full max-w-sm"
+              >
+                 {ytId && (
+                   <div className="flex flex-col items-center gap-4 w-full">
+                     <div className="w-full aspect-video rounded-lg overflow-hidden shadow-2xl">
+                       <iframe 
+                          width="100%" 
+                          height="100%" 
+                          src={`https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0`} 
+                          title="YouTube Music"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                          allowFullScreen
+                        />
+                     </div>
+                     <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-art-paper/60 italic">
+                       <Music size={10} /> Now Playing Soundtrack
+                     </div>
+                   </div>
+                 )}
+                 
+                 <button 
+                   onClick={(e) => {
+                     e.stopPropagation();
+                     navigator.clipboard.writeText(window.location.href);
+                     alert('Share link copied to clipboard!');
+                   }}
+                   className="font-sans text-[10px] tracking-[0.4em] uppercase text-art-gold hover:text-white transition-colors border-b border-art-gold/30 pb-1 mb-2 mt-4"
+                 >
+                   Copy Share Link
+                 </button>
+
+                 <div className="flex flex-wrap justify-center gap-4 sm:gap-6 items-center">
+                   <button 
+                     onClick={(e) => {
+                       e.stopPropagation();
+                       setIsOpen(false);
+                     }}
+                     className="font-sans text-[10px] tracking-[0.4em] uppercase text-art-paper/50 hover:text-art-red-bright transition-colors border-b border-white/10 pb-1"
+                   >
+                     Close Envelope
+                   </button>
+
+                   <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsOpen(false);
+                      setIsCreating(true);
+                      setIsUnlocked(true);
+                      window.history.pushState({}, '', '/');
+                    }}
+                    className="font-sans text-[10px] tracking-[0.4em] uppercase text-art-paper/30 hover:text-art-red-bright transition-colors border-b border-white/5 pb-1"
+                  >
+                    Back to Editor
+                  </button>
+
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const currentFrom = from;
+                      const currentTo = to;
+                      setIsOpen(false);
+                      setIsCreating(true);
+                      setIsUnlocked(true);
+                      setTo(currentFrom);
+                      setFrom(currentTo);
+                      setContent('');
+                      setImages([]);
+                      setYtLink('');
+                      setPasscode('');
+                      window.history.pushState({}, '', '/');
+                    }}
+                    className="font-sans text-[10px] tracking-[0.4em] uppercase text-art-gold hover:text-white transition-colors border-b border-art-gold/30 pb-1"
+                  >
+                    Reply
+                  </button>
+                 </div>
+              </motion.div>
+            )}
           </Envelope>
         </div>
 
-        <AnimatePresence>
-          {!isOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="mt-8"
-            >
-              <div className="flex flex-col items-center gap-4">
-                <motion.div
-                  animate={{ y: [0, 5, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  className="text-art-red-bright bg-art-paper/5 p-4 rounded-full backdrop-blur-sm border border-art-paper/10"
-                >
-                  <motion.div className="text-[10px] font-sans tracking-[0.4em] uppercase opacity-70">
-                    Tap the seal to reveal
-                  </motion.div>
-                </motion.div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {isOpen && (
+      <AnimatePresence>
+        {!isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 2 }}
-            className="fixed bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 z-50 bg-art-back/90 backdrop-blur-md p-4 rounded-2xl shadow-2xl border border-art-paper/10 w-auto min-w-[300px]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="mt-8"
           >
-             {ytId && (
-               <div className="flex flex-col items-center gap-4">
-                 <div className="w-64 aspect-video rounded-lg overflow-hidden border border-art-paper/10 shadow-2xl">
-                   <iframe 
-                      width="100%" 
-                      height="100%" 
-                      src={`https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0`} 
-                      title="YouTube Music"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                      allowFullScreen
-                    />
-                 </div>
-                 <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-art-paper/40 italic">
-                   <Music size={10} /> Now Playing Soundtrack
-                 </div>
-               </div>
-             )}
-             
-             <button 
-               onClick={() => {
-                 navigator.clipboard.writeText(window.location.href);
-                 alert('Share link copied to clipboard!');
-               }}
-               className="font-sans text-[10px] tracking-[0.4em] uppercase text-art-gold hover:text-white transition-colors border-b border-art-gold/30 pb-1 mb-2 mt-4"
-             >
-               Copy Share Link
-             </button>
-
-             <div className="flex gap-6 items-center">
-               <button 
-                 onClick={() => {
-                   setIsOpen(false);
-                 }}
-                 className="font-sans text-[10px] tracking-[0.4em] uppercase text-art-paper/50 hover:text-art-red-bright transition-colors border-b border-white/10 pb-1"
-               >
-                 Close Envelope
-               </button>
-
-               <button 
-                onClick={() => {
-                  setIsOpen(false);
-                  setIsCreating(true);
-                  setIsUnlocked(true);
-                  window.history.pushState({}, '', '/');
-                }}
-                className="font-sans text-[10px] tracking-[0.4em] uppercase text-art-paper/30 hover:text-art-red-bright transition-colors border-b border-white/5 pb-1"
+            <div className="flex flex-col items-center gap-4">
+              <motion.div
+                animate={{ y: [0, 5, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                className="text-art-red-bright bg-art-paper/5 p-4 rounded-full backdrop-blur-sm border border-art-paper/10"
               >
-                Back to Editor
-              </button>
-
-              <button 
-                onClick={() => {
-                  const currentFrom = from;
-                  const currentTo = to;
-                  setIsOpen(false);
-                  setIsCreating(true);
-                  setIsUnlocked(true);
-                  setTo(currentFrom);
-                  setFrom(currentTo);
-                  setContent('');
-                  setImages([]);
-                  setYtLink('');
-                  setPasscode('');
-                  window.history.pushState({}, '', '/');
-                }}
-                className="font-sans text-[10px] tracking-[0.4em] uppercase text-art-gold hover:text-white transition-colors border-b border-art-gold/30 pb-1"
-              >
-                Reply
-              </button>
-             </div>
+                <motion.div className="text-[10px] font-sans tracking-[0.4em] uppercase opacity-70">
+                  Tap the seal to reveal
+                </motion.div>
+              </motion.div>
+            </div>
           </motion.div>
         )}
+      </AnimatePresence>
       </main>
 
       <footer className="fixed bottom-6 text-center z-10 pointer-events-none">
