@@ -15,10 +15,10 @@ export default function Envelope({ isOpen, onOpen, children }: EnvelopeProps) {
       <motion.div
         initial={false}
         animate={{
-          y: isOpen ? -200 : 0,
-          scale: isOpen ? 1 : 0.95,
+          y: isOpen ? -100 : 0,
+          scale: isOpen ? 1.05 : 0.95,
           opacity: isOpen ? 1 : 0.6,
-          zIndex: isOpen ? 20 : 5,
+          zIndex: isOpen ? 40 : 5,
           rotate: isOpen ? 0 : 2,
         }}
         transition={{
@@ -27,7 +27,7 @@ export default function Envelope({ isOpen, onOpen, children }: EnvelopeProps) {
           damping: 15,
           delay: isOpen ? 1.2 : 0
         }}
-        className="absolute inset-x-4 top-4 bottom-4 bg-art-paper shadow-2xl rounded-sm p-6 z-5 border border-black/5 ring-1 ring-black/5"
+        className={`absolute inset-x-4 bg-art-paper shadow-2xl rounded-sm p-6 border border-black/5 ring-1 ring-black/5 transition-all duration-[1.5s] ${isOpen ? 'top-[-50px] bottom-auto min-h-[400px]' : 'top-4 bottom-4'}`}
       >
         <div className="h-full w-full overflow-hidden relative">
            {/* Subtle paper texture */}

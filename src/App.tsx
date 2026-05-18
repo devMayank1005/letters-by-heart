@@ -298,7 +298,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen relative flex flex-col items-center justify-center p-6 overflow-hidden bg-art-back text-art-paper">
+    <div className="min-h-screen relative flex flex-col items-center justify-center p-6 overflow-x-hidden bg-art-back text-art-paper">
       <FloatingSymbols />
 
       <main className="relative z-10 w-full max-w-2xl px-4 flex flex-col items-center">

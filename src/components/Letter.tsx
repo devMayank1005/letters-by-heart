@@ -9,7 +9,7 @@ interface LetterProps {
 
 export default function Letter({ to, from, content, images }: LetterProps) {
   return (
-    <div className="font-georgia text-art-ink leading-relaxed h-full overflow-y-auto pr-2 custom-scrollbar">
+    <div className="font-georgia text-art-ink leading-relaxed pr-2">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
