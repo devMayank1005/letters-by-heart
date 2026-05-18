@@ -17,7 +17,7 @@ export default function Letter({ to, from, content, images }: LetterProps) {
       >
         <div className="text-right text-[9px] font-sans italic mb-8 opacity-30 uppercase tracking-[0.3em]">Paris, France</div>
         
-        <p className="text-3xl mb-10 border-b border-art-ink/5 pb-6 font-script">Dearest {to || 'One'},</p>
+        <p className="text-3xl mb-10 border-b border-art-ink/5 pb-6 font-script">{to || 'One'},</p>
         
         <div className="space-y-8 text-xl leading-loose">
           {content ? (
