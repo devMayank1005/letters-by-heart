@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Inter:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", serif;
+  --font-script: "Dancing Script", cursive;
+  --font-georgia: "Georgia", serif;
+  
+  --color-art-back: #2c0b0e;
+  --color-art-paper: #fefae0;
+  --color-art-ink: #4a2c2a;
+  --color-art-red-bright: #d94e4e;
+  --color-art-red-deep: #b33a3a;
+  --color-art-red-light: #e86363;
+  --color-art-gold: #d4af37;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-art-back);
+    color: var(--color-art-paper);
+    overflow-x: hidden;
+  }
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
