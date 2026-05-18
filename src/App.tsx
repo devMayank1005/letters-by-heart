@@ -362,7 +362,7 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 2 }}
-            className="mt-32 flex flex-col items-center gap-6"
+            className="mt-32 flex flex-col items-center gap-6 relative z-50 bg-art-back/90 backdrop-blur-md p-6 rounded-2xl shadow-2xl border border-art-paper/10"
           >
              {ytId && (
                <div className="flex flex-col items-center gap-4">
@@ -413,6 +413,26 @@ export default function App() {
                 className="font-sans text-[10px] tracking-[0.4em] uppercase text-art-paper/30 hover:text-art-red-bright transition-colors border-b border-white/5 pb-1"
               >
                 Back to Editor
+              </button>
+
+              <button 
+                onClick={() => {
+                  const currentFrom = from;
+                  const currentTo = to;
+                  setIsOpen(false);
+                  setIsCreating(true);
+                  setIsUnlocked(true);
+                  setTo(currentFrom);
+                  setFrom(currentTo);
+                  setContent('');
+                  setImages([]);
+                  setYtLink('');
+                  setPasscode('');
+                  window.history.pushState({}, '', '/');
+                }}
+                className="font-sans text-[10px] tracking-[0.4em] uppercase text-art-gold hover:text-white transition-colors border-b border-art-gold/30 pb-1"
+              >
+                Reply
               </button>
              </div>
           </motion.div>
