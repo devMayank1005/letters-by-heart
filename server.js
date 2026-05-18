@@ -2,8 +2,13 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -41,7 +46,7 @@ app.post('/api/letters', async (req, res) => {
 
 app.get('/api/letters/:id', async (req, res) => {
   try {
-    const letter = await Letter.findById(req.req.params ? req.params.id : req.path.split('/').pop());
+    const letter = await Letter.findById(req.params.id);
     if (!letter) {
       return res.status(404).json({ error: 'Letter not found' });
     }
@@ -50,6 +55,13 @@ app.get('/api/letters/:id', async (req, res) => {
     console.error('Error fetching letter:', error);
     res.status(500).json({ error: 'Failed to fetch letter' });
   }
+});
+
+// Serve static frontend files in production
+app.use(express.static(path.join(__dirname, 'dist')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 app.listen(PORT, () => {
