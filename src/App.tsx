@@ -28,6 +28,12 @@ export default function App() {
   const [enteredPasscode, setEnteredPasscode] = useState('');
   const [createdAt, setCreatedAt] = useState<string | null>(null);
   const [openedAt, setOpenedAt] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !!new URLSearchParams(window.location.search).get('id');
+    }
+    return false;
+  });
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -48,7 +54,10 @@ export default function App() {
             setIsUnlocked(false);
           }
         })
-        .catch(err => console.error('Failed to load letter:', err));
+        .catch(err => console.error('Failed to load letter:', err))
+        .finally(() => setIsLoading(false));
+    } else {
+      setIsLoading(false);
     }
   }, []);
 
@@ -157,6 +166,22 @@ export default function App() {
       setIsCreating(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-art-back text-art-paper p-6 flex flex-col items-center justify-center">
+        <FloatingSymbols />
+        <motion.div
+          animate={{ scale: [1, 1.1, 1], opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="text-pink-500"
+        >
+          <Heart fill="currentColor" size={48} />
+        </motion.div>
+        <p className="mt-8 text-[10px] tracking-[0.4em] uppercase opacity-40 font-sans">Retrieving memory...</p>
+      </div>
+    );
+  }
 
   if (isCreating) {
     return (
