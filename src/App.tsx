@@ -26,6 +26,8 @@ export default function App() {
   const [requiredPasscode, setRequiredPasscode] = useState('');
   const [isUnlocked, setIsUnlocked] = useState(true);
   const [enteredPasscode, setEnteredPasscode] = useState('');
+  const [createdAt, setCreatedAt] = useState<string | null>(null);
+  const [openedAt, setOpenedAt] = useState<string | null>(null);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -40,6 +42,7 @@ export default function App() {
           if (data.content) setContent(data.content);
           if (data.images) setImages(data.images);
           if (data.ytLink) setYtLink(data.ytLink);
+          if (data.createdAt) setCreatedAt(data.createdAt);
           if (data.passcode) {
             setRequiredPasscode(data.passcode);
             setIsUnlocked(false);
@@ -57,6 +60,7 @@ export default function App() {
 
   const handleOpen = useCallback(() => {
     setIsOpen(true);
+    setOpenedAt(new Date().toISOString());
     
     // Celebratory hearts and stars
     const duration = 3 * 1000;
@@ -330,6 +334,8 @@ export default function App() {
               from={from}
               content={content}
               images={images}
+              createdAt={createdAt}
+              openedAt={openedAt}
             />
             {isOpen && (
               <motion.div
@@ -406,6 +412,8 @@ export default function App() {
                       setImages([]);
                       setYtLink('');
                       setPasscode('');
+                      setCreatedAt(null);
+                      setOpenedAt(null);
                       window.history.pushState({}, '', '/');
                     }}
                     className="font-sans text-[10px] tracking-[0.4em] uppercase text-art-gold hover:text-white transition-colors border-b border-art-gold/30 pb-1"

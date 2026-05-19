@@ -7,9 +7,11 @@ interface LetterProps {
   from: string;
   content: string;
   images: string[];
+  createdAt?: string | null;
+  openedAt?: string | null;
 }
 
-export default function Letter({ to, from, content, images }: LetterProps) {
+export default function Letter({ to, from, content, images, createdAt, openedAt }: LetterProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   return (
@@ -20,7 +22,34 @@ export default function Letter({ to, from, content, images }: LetterProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 2.2, duration: 2, ease: "easeOut" }}
       >
-        <div className="text-right text-[9px] font-sans italic mb-8 opacity-30 uppercase tracking-[0.3em]">Paris, France</div>
+        <div className="flex justify-between items-start text-[9px] font-sans italic mb-8 opacity-40 uppercase tracking-[0.2em] space-x-4 text-left">
+          {createdAt ? (
+            <div>
+              <span className="block opacity-70 mb-1 tracking-[0.3em]">Written On</span>
+              {new Date(createdAt).toLocaleString(undefined, {
+                year: 'numeric', month: 'short', day: 'numeric', 
+                hour: '2-digit', minute: '2-digit'
+              })}
+            </div>
+          ) : (
+             <div className="opacity-0">Placeholder</div>
+          )}
+          
+          {openedAt ? (
+            <div className="text-right">
+              <span className="block opacity-70 mb-1 tracking-[0.3em]">Opened On</span>
+              {new Date(openedAt).toLocaleString(undefined, {
+                year: 'numeric', month: 'short', day: 'numeric', 
+                hour: '2-digit', minute: '2-digit'
+              })}
+            </div>
+          ) : (
+             <div className="text-right">
+                <span className="block opacity-70 mb-1 tracking-[0.3em]">&nbsp;</span>
+                Sealed
+             </div>
+          )}
+        </div>
         
         <p className="text-3xl mb-10 border-b border-art-ink/5 pb-6 font-script">{to || 'One'},</p>
         
@@ -58,7 +87,6 @@ export default function Letter({ to, from, content, images }: LetterProps) {
 
         <div className="mt-16 flex flex-col items-center">
           <div className="text-art-red-bright text-4xl mb-4 drop-shadow-sm">♥</div>
-          <p className="text-xl italic font-light opacity-80">Always and Forever yours,</p>
           <p className="text-3xl mt-4 font-script text-art-ink tracking-normal">{from || 'Julian'}</p>
         </div>
         
