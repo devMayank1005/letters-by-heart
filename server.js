@@ -55,11 +55,23 @@ app.post('/api/letters', async (req, res) => {
 
 app.get('/api/letters/:id', async (req, res) => {
   try {
+    const { creatorToken } = req.query;
     const letter = await Letter.findById(req.params.id);
     if (!letter) {
       return res.status(404).json({ error: 'Letter not found' });
     }
-    res.json(letter);
+    
+    const isCreator = letter.creatorToken && letter.creatorToken === creatorToken;
+    const responseData = letter.toObject();
+    
+    // Remove sensitive data if not creator
+    if (!isCreator) {
+      delete responseData.creatorToken;
+      delete responseData.receiverOpenedAt;
+      delete responseData.openHistory;
+    }
+    
+    res.json(responseData);
   } catch (error) {
     console.error('Error fetching letter:', error);
     res.status(500).json({ error: 'Failed to fetch letter' });
@@ -118,11 +130,14 @@ app.patch('/api/letters/:id/open', async (req, res) => {
     }
     
     await letter.save();
-    res.json({ 
-      openedAt: letter.openedAt,
-      receiverOpenedAt: letter.receiverOpenedAt,
-      openHistory: letter.openHistory
-    });
+    
+    const responseData = { openedAt: letter.openedAt };
+    if (isCreatorOpen) {
+      responseData.receiverOpenedAt = letter.receiverOpenedAt;
+      responseData.openHistory = letter.openHistory;
+    }
+    
+    res.json(responseData);
   } catch (error) {
     console.error('Error updating letter:', error);
     res.status(500).json({ error: 'Failed to update letter' });

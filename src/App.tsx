@@ -44,7 +44,11 @@ export default function App() {
     const id = urlParams.get('id');
     if (id) {
       setIsCreating(false);
-      fetch(`/api/letters/${id}`)
+      const localToken = typeof window !== 'undefined' ? localStorage.getItem('letter_creator_token') : null;
+      let url = `/api/letters/${id}`;
+      if (localToken) url += `?creatorToken=${localToken}`;
+      
+      fetch(url)
         .then(res => res.json())
         .then(data => {
           if (data.to) setTo(data.to);
@@ -409,21 +413,28 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        <div className="w-full relative py-8 flex flex-col items-center">
+        <AnimatePresence>
           {isOpen && isCreator && openHistory.length > 0 && (
-            <div className="w-full max-w-sm flex flex-col gap-2 items-center z-50 mb-12">
-              <div className="text-[10px] tracking-widest uppercase text-art-gold/80 mb-2">Last 5 Opens</div>
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="fixed top-6 inset-x-0 mx-auto w-full max-w-md px-4 flex flex-col gap-2 items-center z-[100] pointer-events-none"
+            >
+              <div className="text-[10px] font-semibold tracking-widest uppercase text-art-gold/80 mb-1 drop-shadow-md">Last 5 Opens</div>
               {openHistory.map((history, i) => (
-                <div key={i} className={`w-full px-4 py-2 rounded-md text-[10px] tracking-widest uppercase border backdrop-blur-sm flex justify-between items-center ${history.isCreator ? 'bg-white/5 text-white/50 border-white/10' : 'bg-art-gold/10 text-art-gold border-art-gold/20'}`}>
+                <div key={i} className={`w-full px-4 py-2.5 rounded-lg text-xs tracking-wider uppercase border backdrop-blur-md flex justify-between items-center shadow-xl pointer-events-auto ${history.isCreator ? 'bg-black/40 text-white/90 border-white/10' : 'bg-art-gold/20 text-art-gold font-medium border-art-gold/30'}`}>
                   <div className="flex flex-col gap-1 text-left">
                     <span>{history.isCreator ? 'You (Creator)' : 'Receiver (Guest)'}</span>
-                    <span className="text-[8px] opacity-70 flex items-center gap-1">📍 {history.location || 'Unknown Location'}</span>
+                    <span className="text-[10px] opacity-80 flex items-center gap-1 font-sans normal-case tracking-normal">📍 {history.location || 'Unknown Location'}</span>
                   </div>
-                  <span>{new Date(history.timestamp).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                  <span className="text-[10px] opacity-90">{new Date(history.timestamp).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
               ))}
-            </div>
+            </motion.div>
           )}
+        </AnimatePresence>
+
+        <div className="w-full relative py-8 flex flex-col items-center">
           <Envelope isOpen={isOpen} onOpen={handleOpen} to={to}>
             <Letter 
               to={to}
