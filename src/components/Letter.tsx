@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, PanInfo } from 'motion/react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -15,14 +15,14 @@ interface LetterProps {
 export default function Letter({ to, from, content, images, createdAt, openedAt }: LetterProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-  const handleNext = (e?: React.MouseEvent) => {
+  const handleNext = (e?: MouseEvent) => {
     e?.stopPropagation();
     if (selectedIndex !== null && images) {
       setSelectedIndex((selectedIndex + 1) % images.length);
     }
   };
 
-  const handlePrev = (e?: React.MouseEvent) => {
+  const handlePrev = (e?: MouseEvent) => {
     e?.stopPropagation();
     if (selectedIndex !== null && images) {
       setSelectedIndex((selectedIndex - 1 + images.length) % images.length);
