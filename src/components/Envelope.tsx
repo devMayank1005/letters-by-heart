@@ -14,21 +14,28 @@ export default function Envelope({ isOpen, onOpen, children, to }: EnvelopeProps
     <div className="relative w-full max-w-sm aspect-[4/3] perspective-1000 mx-auto mt-12 mb-24">
       {/* The Letter */}
       <motion.div
+        layout
         initial={false}
-        animate={{
-          y: isOpen ? -100 : 0,
-          scale: isOpen ? 1.05 : 0.95,
-          opacity: isOpen ? 1 : 0.6,
-          zIndex: isOpen ? 40 : 5,
-          rotate: isOpen ? 0 : 2,
+        animate={isOpen ? {
+          y: [0, -300, -20],
+          scale: [0.95, 0.95, 1.05],
+          opacity: 1,
+          zIndex: [5, 5, 40],
+          rotate: [2, 0, 0],
+        } : {
+          y: 0,
+          scale: 0.95,
+          opacity: 0.6,
+          zIndex: 5,
+          rotate: 2,
         }}
         transition={{
-          type: "spring",
-          stiffness: 40,
-          damping: 15,
-          delay: isOpen ? 1.2 : 0
+          duration: isOpen ? 2.5 : 1,
+          times: isOpen ? [0, 0.5, 1] : undefined,
+          ease: "easeInOut",
+          delay: isOpen ? 0.4 : 0
         }}
-        className={`absolute inset-x-4 bg-art-paper shadow-2xl rounded-sm p-6 border border-black/5 ring-1 ring-black/5 transition-all duration-[1.5s] ${isOpen ? 'top-[-50px] bottom-auto min-h-[400px]' : 'top-4 bottom-4'}`}
+        className={`absolute inset-x-4 bg-art-paper shadow-2xl rounded-sm p-6 border border-black/5 ring-1 ring-black/5 ${isOpen ? 'top-[-50px] bottom-auto min-h-[400px]' : 'top-4 bottom-4'}`}
       >
         <div className="h-full w-full overflow-hidden relative">
            {/* Subtle paper texture */}
@@ -59,8 +66,8 @@ export default function Envelope({ isOpen, onOpen, children, to }: EnvelopeProps
         {/* The Flap */}
         <motion.div 
           initial={false}
-          animate={{ rotateX: isOpen ? -170 : 0 }}
-          transition={{ duration: 1.5, ease: [0.4, 0, 0.2, 1] }}
+          animate={{ rotateX: isOpen ? -180 : 0 }}
+          transition={{ duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
           style={{ transformOrigin: "top" }}
           className="absolute inset-x-0 top-0 h-1/2 bg-pink-400 z-30 preserve-3d"
         >
