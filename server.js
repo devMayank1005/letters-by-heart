@@ -28,7 +28,6 @@ const letterSchema = new mongoose.Schema({
   content: String,
   images: [String],
   ytLink: String,
-  passcode: String,
   createdAt: { type: Date, default: Date.now },
   openedAt: { type: Date },
   creatorToken: String,

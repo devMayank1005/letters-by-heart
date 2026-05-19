@@ -5,7 +5,7 @@
 
 import { useState, useCallback, ChangeEvent, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Heart, Star, Music, Image as ImageIcon, Plus, Trash2, Play, Pause, Lock } from 'lucide-react';
+import { Heart, Star, Music, Image as ImageIcon, Plus, Trash2, Play, Pause } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import Envelope from './components/Envelope';
 import Letter from './components/Letter';
@@ -21,11 +21,7 @@ export default function App() {
   const [content, setContent] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [ytLink, setYtLink] = useState('');
-  const [passcode, setPasscode] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [requiredPasscode, setRequiredPasscode] = useState('');
-  const [isUnlocked, setIsUnlocked] = useState(true);
-  const [enteredPasscode, setEnteredPasscode] = useState('');
   const [createdAt, setCreatedAt] = useState<string | null>(null);
   const [openedAt, setOpenedAt] = useState<string | null>(null);
   const [receiverOpenedAt, setReceiverOpenedAt] = useState<string | null>(null);
@@ -67,10 +63,6 @@ export default function App() {
             }
           }
 
-          if (data.passcode) {
-            setRequiredPasscode(data.passcode);
-            setIsUnlocked(false);
-          }
         })
         .catch(err => console.error('Failed to load letter:', err))
         .finally(() => setIsLoading(false));
@@ -188,7 +180,7 @@ export default function App() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to, from, content, images, ytLink, passcode, creatorToken })
+        body: JSON.stringify({ to, from, content, images, ytLink, creatorToken })
       });
       const data = await res.json();
       if (data.id) {
@@ -265,19 +257,6 @@ export default function App() {
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-[0.3em] opacity-40 flex items-center gap-2 font-sans">
-                <Lock size={12} /> Secret Passcode (Optional)
-              </label>
-              <input 
-                type="text"
-                value={passcode}
-                onChange={e => setPasscode(e.target.value)}
-                placeholder="e.g. 310110"
-                className="w-full bg-art-paper/5 border border-art-paper/10 py-3 px-4 rounded-sm text-sm text-art-paper outline-none focus:border-art-gold transition-colors placeholder:opacity-20 font-mono tracking-widest"
-              />
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-3">
                 <label className="text-[10px] uppercase tracking-[0.3em] opacity-40 flex items-center gap-2 font-sans">
@@ -335,38 +314,6 @@ export default function App() {
                 whileHover={{ translateX: '100%' }}
                 transition={{ duration: 0.8 }}
               />
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isUnlocked) {
-    return (
-      <div className="min-h-screen bg-art-back text-art-paper p-6 flex flex-col items-center justify-center">
-        <FloatingSymbols />
-        <div className="relative z-10 w-full max-w-sm bg-art-paper/5 backdrop-blur-sm p-8 rounded-lg border border-art-paper/10 shadow-2xl text-center">
-          <Lock size={40} className="mx-auto mb-6 text-art-red-bright opacity-80" />
-          <h2 className="font-serif italic text-2xl mb-6">Sealed with a Secret</h2>
-          <div className="space-y-4">
-            <input 
-              type="password"
-              value={enteredPasscode}
-              onChange={e => setEnteredPasscode(e.target.value)}
-              placeholder="Enter passcode..."
-              className="w-full bg-transparent border-b border-art-paper/20 py-3 text-center focus:border-art-gold transition-colors outline-none font-mono tracking-widest text-lg placeholder:opacity-20 placeholder:font-sans placeholder:tracking-normal"
-            />
-            {enteredPasscode && enteredPasscode !== requiredPasscode && (
-              <p className="text-art-red-bright text-[10px] uppercase tracking-widest mt-2">Incorrect passcode</p>
-            )}
-            <button 
-              onClick={() => {
-                if (enteredPasscode === requiredPasscode) setIsUnlocked(true);
-              }}
-              className="w-full bg-art-gold/20 hover:bg-art-gold/30 text-art-gold font-sans text-[10px] tracking-[0.4em] uppercase py-3 rounded-full transition-colors mt-4"
-            >
-              Unlock Letter
             </button>
           </div>
         </div>
@@ -485,7 +432,6 @@ export default function App() {
                       setEditingId(currentId);
                       setIsOpen(false);
                       setIsCreating(true);
-                      setIsUnlocked(true);
                     }}
                     className="font-sans text-[10px] tracking-[0.4em] uppercase text-art-paper/30 hover:text-art-red-bright transition-colors border-b border-white/5 pb-1"
                   >
@@ -499,13 +445,11 @@ export default function App() {
                       const currentTo = to;
                       setIsOpen(false);
                       setIsCreating(true);
-                      setIsUnlocked(true);
                       setTo(currentFrom);
                       setFrom(currentTo);
                       setContent('');
                       setImages([]);
                       setYtLink('');
-                      setPasscode('');
                       setCreatedAt(null);
                       setOpenedAt(null);
                       window.history.pushState({}, '', '/');
