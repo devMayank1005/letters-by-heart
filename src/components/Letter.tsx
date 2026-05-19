@@ -16,7 +16,7 @@ export default function Letter({ to, from, content, images, createdAt, openedAt 
 
   return (
     <>
-      <div className="font-georgia text-art-ink leading-relaxed pr-2">
+      <div className="font-serif text-art-ink leading-relaxed pr-2">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -53,7 +53,7 @@ export default function Letter({ to, from, content, images, createdAt, openedAt 
         
         <p className="text-3xl mb-10 border-b border-art-ink/5 pb-6 font-script">{to || 'One'},</p>
         
-        <div className="space-y-8 text-xl leading-loose">
+        <div className="space-y-6 text-lg font-light leading-loose tracking-wide text-art-ink/90">
           {content ? (
             content.split('\n').map((para, i) => <p key={i}>{para}</p>)
           ) : (
