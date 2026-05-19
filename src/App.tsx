@@ -28,6 +28,8 @@ export default function App() {
   const [enteredPasscode, setEnteredPasscode] = useState('');
   const [createdAt, setCreatedAt] = useState<string | null>(null);
   const [openedAt, setOpenedAt] = useState<string | null>(null);
+  const [receiverOpenedAt, setReceiverOpenedAt] = useState<string | null>(null);
+  const [isCreator, setIsCreator] = useState(false);
   const [isLoading, setIsLoading] = useState(() => {
     if (typeof window !== 'undefined') {
       return !!new URLSearchParams(window.location.search).get('id');
@@ -49,6 +51,15 @@ export default function App() {
           if (data.images) setImages(data.images);
           if (data.ytLink) setYtLink(data.ytLink);
           if (data.createdAt) setCreatedAt(data.createdAt);
+          if (data.receiverOpenedAt) setReceiverOpenedAt(data.receiverOpenedAt);
+          
+          if (typeof window !== 'undefined') {
+            const localToken = localStorage.getItem('letter_creator_token');
+            if (data.creatorToken && localToken === data.creatorToken) {
+              setIsCreator(true);
+            }
+          }
+
           if (data.passcode) {
             setRequiredPasscode(data.passcode);
             setIsUnlocked(false);
@@ -71,11 +82,18 @@ export default function App() {
     setIsOpen(true);
     
     const currentId = new URLSearchParams(window.location.search).get('id');
+    const localToken = typeof window !== 'undefined' ? localStorage.getItem('letter_creator_token') : null;
+
     if (currentId) {
-      fetch(`/api/letters/${currentId}/open`, { method: 'PATCH' })
+      fetch(`/api/letters/${currentId}/open`, { 
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ creatorToken: localToken })
+      })
         .then(res => res.json())
         .then(data => {
           if (data.openedAt) setOpenedAt(data.openedAt);
+          if (data.receiverOpenedAt) setReceiverOpenedAt(data.receiverOpenedAt);
         })
         .catch(console.error);
     } else {
@@ -150,14 +168,21 @@ export default function App() {
     
     setIsSaving(true);
     try {
+      let creatorToken = localStorage.getItem('letter_creator_token');
+      if (!creatorToken) {
+        creatorToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
+        localStorage.setItem('letter_creator_token', creatorToken);
+      }
+      
       const res = await fetch('/api/letters', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to, from, content, images, ytLink, passcode })
+        body: JSON.stringify({ to, from, content, images, ytLink, passcode, creatorToken })
       });
       const data = await res.json();
       if (data.id) {
         window.history.pushState({}, '', `?id=${data.id}`);
+        setIsCreator(true);
       }
     } catch (err) {
       console.error('Failed to save letter:', err);
@@ -364,6 +389,11 @@ export default function App() {
         </AnimatePresence>
 
         <div className="w-full relative py-8">
+          {isOpen && isCreator && receiverOpenedAt && (
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-art-gold/10 text-art-gold px-4 py-2 rounded-full text-[10px] tracking-widest uppercase border border-art-gold/20 backdrop-blur-sm z-50 whitespace-nowrap">
+              Receiver opened this on {new Date(receiverOpenedAt).toLocaleDateString()}
+            </div>
+          )}
           <Envelope isOpen={isOpen} onOpen={handleOpen} to={to}>
             <Letter 
               to={to}

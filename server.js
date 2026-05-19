@@ -30,7 +30,9 @@ const letterSchema = new mongoose.Schema({
   ytLink: String,
   passcode: String,
   createdAt: { type: Date, default: Date.now },
-  openedAt: { type: Date }
+  openedAt: { type: Date },
+  creatorToken: String,
+  receiverOpenedAt: { type: Date }
 });
 
 const Letter = mongoose.model('Letter', letterSchema);
@@ -61,15 +63,25 @@ app.get('/api/letters/:id', async (req, res) => {
 
 app.patch('/api/letters/:id/open', async (req, res) => {
   try {
-    const letter = await Letter.findByIdAndUpdate(
-      req.params.id,
-      { openedAt: new Date() },
-      { new: true }
-    );
+    const { creatorToken } = req.body || {};
+    const letter = await Letter.findById(req.params.id);
+    
     if (!letter) {
       return res.status(404).json({ error: 'Letter not found' });
     }
-    res.json({ openedAt: letter.openedAt });
+    
+    letter.openedAt = new Date();
+    
+    // If someone else opened it (no token, or wrong token), record it as receiver opened
+    if (letter.creatorToken && creatorToken !== letter.creatorToken) {
+      letter.receiverOpenedAt = new Date();
+    }
+    
+    await letter.save();
+    res.json({ 
+      openedAt: letter.openedAt,
+      receiverOpenedAt: letter.receiverOpenedAt
+    });
   } catch (error) {
     console.error('Error updating letter:', error);
     res.status(500).json({ error: 'Failed to update letter' });
