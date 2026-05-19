@@ -1,4 +1,6 @@
-import { motion } from 'motion/react';
+import { useState } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface LetterProps {
   to: string;
@@ -8,8 +10,11 @@ interface LetterProps {
 }
 
 export default function Letter({ to, from, content, images }: LetterProps) {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   return (
-    <div className="font-georgia text-art-ink leading-relaxed pr-2">
+    <>
+      <div className="font-georgia text-art-ink leading-relaxed pr-2">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -31,18 +36,23 @@ export default function Letter({ to, from, content, images }: LetterProps) {
         </div>
 
         {images && images.length > 0 && (
-          <div className="grid grid-cols-1 gap-6 my-12">
-            {images.map((img, idx) => (
-              <motion.div 
-                key={idx}
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ delay: 2.5 + idx * 0.3, duration: 1 }}
-                className="relative aspect-[4/3] rounded-sm overflow-hidden shadow-lg ring-1 ring-black/10 transform rotate-1"
-              >
-                <img src={img} alt={`Moment ${idx + 1}`} className="w-full h-full object-cover" />
-              </motion.div>
-            ))}
+          <div className="columns-2 sm:columns-3 gap-4 space-y-4 my-12">
+            {images.map((img, idx) => {
+              const rotations = ['rotate-2', '-rotate-2', 'rotate-1', '-rotate-3', 'rotate-3'];
+              const randomRotation = rotations[idx % rotations.length];
+              return (
+                <motion.div 
+                  key={idx}
+                  initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ delay: 2.5 + idx * 0.2, duration: 0.8 }}
+                  className={`relative rounded-md overflow-hidden shadow-xl ring-4 ring-white transform ${randomRotation} cursor-zoom-in hover:scale-105 hover:z-10 transition-transform duration-300 break-inside-avoid`}
+                  onClick={() => setSelectedImage(img)}
+                >
+                  <img src={img} alt={`Moment ${idx + 1}`} className="w-full h-auto object-cover" />
+                </motion.div>
+              );
+            })}
           </div>
         )}
 
@@ -58,5 +68,29 @@ export default function Letter({ to, from, content, images }: LetterProps) {
         </div>
       </motion.div>
     </div>
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {selectedImage && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedImage(null)}
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 sm:p-8 cursor-zoom-out"
+            >
+              <motion.img
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.8 }}
+                src={selectedImage}
+                alt="Expanded view"
+                className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+    </>
   );
 }
