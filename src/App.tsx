@@ -60,7 +60,18 @@ export default function App() {
 
   const handleOpen = useCallback(() => {
     setIsOpen(true);
-    setOpenedAt(new Date().toISOString());
+    
+    const currentId = new URLSearchParams(window.location.search).get('id');
+    if (currentId) {
+      fetch(`/api/letters/${currentId}/open`, { method: 'PATCH' })
+        .then(res => res.json())
+        .then(data => {
+          if (data.openedAt) setOpenedAt(data.openedAt);
+        })
+        .catch(console.error);
+    } else {
+      setOpenedAt(new Date().toISOString());
+    }
     
     // Celebratory hearts and stars
     const duration = 3 * 1000;
@@ -328,7 +339,7 @@ export default function App() {
         </AnimatePresence>
 
         <div className="w-full relative py-8">
-          <Envelope isOpen={isOpen} onOpen={handleOpen}>
+          <Envelope isOpen={isOpen} onOpen={handleOpen} to={to}>
             <Letter 
               to={to}
               from={from}
