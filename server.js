@@ -35,8 +35,7 @@ const letterSchema = new mongoose.Schema({
   receiverOpenedAt: { type: Date },
   openHistory: [{
     timestamp: Date,
-    isCreator: Boolean,
-    location: String
+    isCreator: Boolean
   }]
 });
 
@@ -103,7 +102,7 @@ app.put('/api/letters/:id', async (req, res) => {
 
 app.patch('/api/letters/:id/open', async (req, res) => {
   try {
-    const { creatorToken, location } = req.body || {};
+    const { creatorToken } = req.body || {};
     const letter = await Letter.findById(req.params.id);
     
     if (!letter) {
@@ -120,8 +119,7 @@ app.patch('/api/letters/:id/open', async (req, res) => {
     
     letter.openHistory.push({
       timestamp: new Date(),
-      isCreator: isCreatorOpen,
-      location: location || 'Unknown'
+      isCreator: isCreatorOpen
     });
     
     // Keep only last 5

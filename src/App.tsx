@@ -31,7 +31,7 @@ export default function App() {
   const [receiverOpenedAt, setReceiverOpenedAt] = useState<string | null>(null);
   const [isCreator, setIsCreator] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [openHistory, setOpenHistory] = useState<{timestamp: string, isCreator: boolean, location?: string}[]>([]);
+  const [openHistory, setOpenHistory] = useState<{timestamp: string, isCreator: boolean}[]>([]);
   const [isLoading, setIsLoading] = useState(() => {
     if (typeof window !== 'undefined') {
       return !!new URLSearchParams(window.location.search).get('id');
@@ -91,24 +91,11 @@ export default function App() {
     const currentId = new URLSearchParams(window.location.search).get('id');
     const localToken = typeof window !== 'undefined' ? localStorage.getItem('letter_creator_token') : null;
 
-    let locationStr = 'Unknown Location';
-    try {
-      const locRes = await fetch('https://ipapi.co/json/');
-      if (locRes.ok) {
-        const locData = await locRes.json();
-        if (locData.city && locData.country_name) {
-          locationStr = `${locData.city}, ${locData.country_name}`;
-        }
-      }
-    } catch (e) {
-      console.log('Location fetch failed');
-    }
-
     if (currentId) {
       fetch(`/api/letters/${currentId}/open`, { 
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ creatorToken: localToken, location: locationStr })
+        body: JSON.stringify({ creatorToken: localToken })
       })
         .then(res => res.json())
         .then(data => {
@@ -425,7 +412,6 @@ export default function App() {
                 <div key={i} className={`w-full px-4 py-2.5 rounded-lg text-xs tracking-wider uppercase border backdrop-blur-md flex justify-between items-center shadow-xl pointer-events-auto ${history.isCreator ? 'bg-black/40 text-white/90 border-white/10' : 'bg-art-gold/20 text-art-gold font-medium border-art-gold/30'}`}>
                   <div className="flex flex-col gap-1 text-left">
                     <span>{history.isCreator ? 'You (Creator)' : 'Receiver (Guest)'}</span>
-                    <span className="text-[10px] opacity-80 flex items-center gap-1 font-sans normal-case tracking-normal">📍 {history.location || 'Unknown Location'}</span>
                   </div>
                   <span className="text-[10px] opacity-90">{new Date(history.timestamp).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
