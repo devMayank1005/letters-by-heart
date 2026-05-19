@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, PanInfo } from 'motion/react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface LetterProps {
   to: string;
@@ -12,7 +13,30 @@ interface LetterProps {
 }
 
 export default function Letter({ to, from, content, images, createdAt, openedAt }: LetterProps) {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
+  const handleNext = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (selectedIndex !== null && images) {
+      setSelectedIndex((selectedIndex + 1) % images.length);
+    }
+  };
+
+  const handlePrev = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (selectedIndex !== null && images) {
+      setSelectedIndex((selectedIndex - 1 + images.length) % images.length);
+    }
+  };
+
+  const handleDragEnd = (e: any, { offset }: PanInfo) => {
+    const swipeThreshold = 50;
+    if (offset.x < -swipeThreshold) {
+      handleNext();
+    } else if (offset.x > swipeThreshold) {
+      handlePrev();
+    }
+  };
 
   return (
     <>
@@ -76,7 +100,7 @@ export default function Letter({ to, from, content, images, createdAt, openedAt 
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ delay: 2.5 + idx * 0.2, duration: 0.8 }}
                   className={`relative rounded-md overflow-hidden shadow-xl ring-4 ring-white transform ${randomRotation} cursor-zoom-in hover:scale-105 hover:z-10 transition-transform duration-300 break-inside-avoid`}
-                  onClick={() => setSelectedImage(img)}
+                  onClick={() => setSelectedIndex(idx)}
                 >
                   <img src={img} alt={`Moment ${idx + 1}`} className="w-full h-auto object-cover" />
                 </motion.div>
@@ -98,22 +122,59 @@ export default function Letter({ to, from, content, images, createdAt, openedAt 
     </div>
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
-          {selectedImage && (
+          {selectedIndex !== null && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setSelectedImage(null)}
-              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 sm:p-8 cursor-zoom-out"
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 sm:p-8"
+              onClick={() => setSelectedIndex(null)}
             >
-              <motion.img
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0.8 }}
-                src={selectedImage}
-                alt="Expanded view"
-                className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
-              />
+              {/* Close Button */}
+              <button 
+                onClick={(e) => { e.stopPropagation(); setSelectedIndex(null); }}
+                className="absolute top-4 right-4 sm:top-8 sm:right-8 text-white/50 hover:text-white z-50 p-2 bg-black/20 rounded-full backdrop-blur-sm transition-colors"
+              >
+                <X size={28} />
+              </button>
+
+              {/* Prev Button */}
+              {images.length > 1 && (
+                <button 
+                  onClick={handlePrev}
+                  className="absolute left-2 sm:left-8 top-1/2 -translate-y-1/2 text-white/50 hover:text-white z-50 p-2 bg-black/20 rounded-full backdrop-blur-sm transition-colors"
+                >
+                  <ChevronLeft size={32} />
+                </button>
+              )}
+
+              {/* Next Button */}
+              {images.length > 1 && (
+                <button 
+                  onClick={handleNext}
+                  className="absolute right-2 sm:right-8 top-1/2 -translate-y-1/2 text-white/50 hover:text-white z-50 p-2 bg-black/20 rounded-full backdrop-blur-sm transition-colors"
+                >
+                  <ChevronRight size={32} />
+                </button>
+              )}
+
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={selectedIndex}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.2 }}
+                  src={images[selectedIndex]}
+                  alt="Expanded view"
+                  className="max-w-full max-h-full object-contain rounded-xl shadow-2xl cursor-grab active:cursor-grabbing pointer-events-auto"
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={0.7}
+                  onDragEnd={handleDragEnd}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </AnimatePresence>
             </motion.div>
           )}
         </AnimatePresence>,
