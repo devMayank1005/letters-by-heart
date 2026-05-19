@@ -32,7 +32,12 @@ const letterSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   openedAt: { type: Date },
   creatorToken: String,
-  receiverOpenedAt: { type: Date }
+  receiverOpenedAt: { type: Date },
+  openHistory: [{
+    timestamp: Date,
+    isCreator: Boolean,
+    location: String
+  }]
 });
 
 const Letter = mongoose.model('Letter', letterSchema);
@@ -61,9 +66,32 @@ app.get('/api/letters/:id', async (req, res) => {
   }
 });
 
+app.put('/api/letters/:id', async (req, res) => {
+  try {
+    const { creatorToken } = req.body;
+    const letter = await Letter.findById(req.params.id);
+    if (!letter) return res.status(404).json({ error: 'Letter not found' });
+    
+    // Optional: verify creatorToken here to prevent unauthorized edits
+    if (letter.creatorToken && letter.creatorToken !== creatorToken) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    const updatedLetter = await Letter.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true }
+    );
+    res.json({ id: updatedLetter._id });
+  } catch (error) {
+    console.error('Error updating letter:', error);
+    res.status(500).json({ error: 'Failed to update letter' });
+  }
+});
+
 app.patch('/api/letters/:id/open', async (req, res) => {
   try {
-    const { creatorToken } = req.body || {};
+    const { creatorToken, location } = req.body || {};
     const letter = await Letter.findById(req.params.id);
     
     if (!letter) {
@@ -71,16 +99,29 @@ app.patch('/api/letters/:id/open', async (req, res) => {
     }
     
     letter.openedAt = new Date();
+    const isCreatorOpen = (letter.creatorToken && creatorToken === letter.creatorToken) || false;
     
-    // If someone else opened it (no token, or wrong token), record it as receiver opened
-    if (letter.creatorToken && creatorToken !== letter.creatorToken) {
+    // If someone else opened it, record it as receiver opened
+    if (!isCreatorOpen) {
       letter.receiverOpenedAt = new Date();
+    }
+    
+    letter.openHistory.push({
+      timestamp: new Date(),
+      isCreator: isCreatorOpen,
+      location: location || 'Unknown'
+    });
+    
+    // Keep only last 5
+    if (letter.openHistory.length > 5) {
+      letter.openHistory = letter.openHistory.slice(-5);
     }
     
     await letter.save();
     res.json({ 
       openedAt: letter.openedAt,
-      receiverOpenedAt: letter.receiverOpenedAt
+      receiverOpenedAt: letter.receiverOpenedAt,
+      openHistory: letter.openHistory
     });
   } catch (error) {
     console.error('Error updating letter:', error);

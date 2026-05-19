@@ -30,6 +30,8 @@ export default function App() {
   const [openedAt, setOpenedAt] = useState<string | null>(null);
   const [receiverOpenedAt, setReceiverOpenedAt] = useState<string | null>(null);
   const [isCreator, setIsCreator] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [openHistory, setOpenHistory] = useState<{timestamp: string, isCreator: boolean, location?: string}[]>([]);
   const [isLoading, setIsLoading] = useState(() => {
     if (typeof window !== 'undefined') {
       return !!new URLSearchParams(window.location.search).get('id');
@@ -52,6 +54,7 @@ export default function App() {
           if (data.ytLink) setYtLink(data.ytLink);
           if (data.createdAt) setCreatedAt(data.createdAt);
           if (data.receiverOpenedAt) setReceiverOpenedAt(data.receiverOpenedAt);
+          if (data.openHistory) setOpenHistory(data.openHistory);
           
           if (typeof window !== 'undefined') {
             const localToken = localStorage.getItem('letter_creator_token');
@@ -78,22 +81,36 @@ export default function App() {
     return (match && match[2].length === 11) ? match[2] : null;
   };
 
-  const handleOpen = useCallback(() => {
+  const handleOpen = useCallback(async () => {
     setIsOpen(true);
     
     const currentId = new URLSearchParams(window.location.search).get('id');
     const localToken = typeof window !== 'undefined' ? localStorage.getItem('letter_creator_token') : null;
 
+    let locationStr = 'Unknown Location';
+    try {
+      const locRes = await fetch('https://ipapi.co/json/');
+      if (locRes.ok) {
+        const locData = await locRes.json();
+        if (locData.city && locData.country_name) {
+          locationStr = `${locData.city}, ${locData.country_name}`;
+        }
+      }
+    } catch (e) {
+      console.log('Location fetch failed');
+    }
+
     if (currentId) {
       fetch(`/api/letters/${currentId}/open`, { 
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ creatorToken: localToken })
+        body: JSON.stringify({ creatorToken: localToken, location: locationStr })
       })
         .then(res => res.json())
         .then(data => {
           if (data.openedAt) setOpenedAt(data.openedAt);
           if (data.receiverOpenedAt) setReceiverOpenedAt(data.receiverOpenedAt);
+          if (data.openHistory) setOpenHistory(data.openHistory);
         })
         .catch(console.error);
     } else {
@@ -174,14 +191,18 @@ export default function App() {
         localStorage.setItem('letter_creator_token', creatorToken);
       }
       
-      const res = await fetch('/api/letters', {
-        method: 'POST',
+      const method = editingId ? 'PUT' : 'POST';
+      const url = editingId ? `/api/letters/${editingId}` : '/api/letters';
+      
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ to, from, content, images, ytLink, passcode, creatorToken })
       });
       const data = await res.json();
       if (data.id) {
         window.history.pushState({}, '', `?id=${data.id}`);
+        setEditingId(null);
         setIsCreator(true);
       }
     } catch (err) {
@@ -388,10 +409,19 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        <div className="w-full relative py-8">
-          {isOpen && isCreator && receiverOpenedAt && (
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-art-gold/10 text-art-gold px-4 py-2 rounded-full text-[10px] tracking-widest uppercase border border-art-gold/20 backdrop-blur-sm z-50 whitespace-nowrap">
-              Receiver opened this on {new Date(receiverOpenedAt).toLocaleDateString()}
+        <div className="w-full relative py-8 flex flex-col items-center">
+          {isOpen && isCreator && openHistory.length > 0 && (
+            <div className="w-full max-w-sm flex flex-col gap-2 items-center z-50 mb-12">
+              <div className="text-[10px] tracking-widest uppercase text-art-gold/80 mb-2">Last 5 Opens</div>
+              {openHistory.map((history, i) => (
+                <div key={i} className={`w-full px-4 py-2 rounded-md text-[10px] tracking-widest uppercase border backdrop-blur-sm flex justify-between items-center ${history.isCreator ? 'bg-white/5 text-white/50 border-white/10' : 'bg-art-gold/10 text-art-gold border-art-gold/20'}`}>
+                  <div className="flex flex-col gap-1 text-left">
+                    <span>{history.isCreator ? 'You (Creator)' : 'Receiver (Guest)'}</span>
+                    <span className="text-[8px] opacity-70 flex items-center gap-1">📍 {history.location || 'Unknown Location'}</span>
+                  </div>
+                  <span>{new Date(history.timestamp).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+              ))}
             </div>
           )}
           <Envelope isOpen={isOpen} onOpen={handleOpen} to={to}>
@@ -454,10 +484,11 @@ export default function App() {
                    <button 
                     onClick={(e) => {
                       e.stopPropagation();
+                      const currentId = new URLSearchParams(window.location.search).get('id');
+                      setEditingId(currentId);
                       setIsOpen(false);
                       setIsCreating(true);
                       setIsUnlocked(true);
-                      window.history.pushState({}, '', '/');
                     }}
                     className="font-sans text-[10px] tracking-[0.4em] uppercase text-art-paper/30 hover:text-art-red-bright transition-colors border-b border-white/5 pb-1"
                   >
